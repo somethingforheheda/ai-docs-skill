@@ -14,11 +14,19 @@ done
 mkdir -p ai-docs/current ai-docs/archive ai-docs/templates
 echo "✓ 创建目录：ai-docs/current  ai-docs/archive  ai-docs/templates"
 
-# 2. 写入任务模板（仅在不存在时）
-TEMPLATE_PATH="ai-docs/templates/task-template.md"
-if [ ! -f "$TEMPLATE_PATH" ]; then
-  cat > "$TEMPLATE_PATH" << 'TEMPLATE'
-# [任务名称]
+# 2. 写入模板（仅在不存在时）
+write_template() {
+  local path="$1"
+  local heredoc_body="$2"
+  if [ ! -f "$path" ]; then
+    printf '%s' "$heredoc_body" > "$path"
+    echo "✓ 写入模板：$path"
+  else
+    echo "- 模板已存在，跳过：$path"
+  fi
+}
+
+write_template "ai-docs/templates/task-template.md" '# [任务名称]
 
 ## 基本信息
 
@@ -36,81 +44,79 @@ if [ ! -f "$TEMPLATE_PATH" ]; then
 
 ---
 
-## 进度追踪
+## 分文件索引
 
-### 已完成
+| 文件 | 内容 |
+|------|------|
+| [requirement.md](./requirement.md) | 需求详情 |
+| [todo.md](./todo.md) | 进度追踪 |
+| [decisions.md](./decisions.md) | 关键决策 |
+| [changes.md](./changes.md) | 变更文件清单 |
+| [resources/](./resources/) | 图片、Excel、drawio 等配套资源 |
+
+---
+
+## 当前状态摘要
+
+[一句话概括当前进展，详情见 todo.md]
+'
+
+write_template "ai-docs/templates/requirement-template.md" '# 需求详情
+
+## 背景
+
+[需求背景、产品思路]
+
+## 需求描述
+
+[功能描述、字段定义、接口结构等]
+
+## 待确认事项
+
+- [ ] [问题1]
+'
+
+write_template "ai-docs/templates/todo-template.md" '# 进度追踪
+
+## 已完成
 - [x] [步骤1]
 
-### 进行中
+## 进行中
 - [ ] [步骤2]（当前进度说明）
 
-### 待完成
+## 待完成
 - [ ] [步骤3]
 - [ ] [步骤4]
 
-### 下一步
+## 下一步
 > 接下来需要：[具体描述下一个动作]
+'
 
----
+write_template "ai-docs/templates/decisions-template.md" '# 关键决策
 
-## 技术方案
-
-### 关键类
-
-| 类名 | 路径 | 作用 |
-|------|------|------|
-| `ClassName` | `path/to/Class.kt:line` | [作用说明] |
-
-### 架构设计
-
-```
-[简要的流程图或架构示意]
-```
-
----
-
-## 关键决策
-
-### 决策1：[标题]
+## 决策1：[标题]
 
 **问题**：[描述问题]
 
 **决策**：[描述决策]
 
 **理由**：[解释原因]
+'
 
----
+write_template "ai-docs/templates/changes-template.md" '# 变更文件清单
 
-## 变更文件清单
-
-### 新增文件
+## 新增文件
 
 | 文件 | 说明 |
 |------|------|
 | `path/to/NewFile.kt` | [说明] |
 
-### 修改文件
+## 修改文件
 
 | 文件 | 修改内容 |
 |------|----------|
 | `path/to/ExistingFile.kt:line` | [修改说明] |
-
----
-
-## 完成总结（任务完成后填写）
-
-### 实现概述
-
-[简述最终实现的内容]
-
-### 经验教训
-
-[记录值得注意的经验，供未来参考]
-TEMPLATE
-  echo "✓ 写入模板：$TEMPLATE_PATH"
-else
-  echo "- 模板已存在，跳过：$TEMPLATE_PATH"
-fi
+'
 
 # 3. 可选：添加 git 本地忽略
 if [ "$WITH_GIT_EXCLUDE" = true ]; then
